@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+htmlcov/
+.coverage
+
+# 环境与数据（本地敏感/生成物不入库）
+.env
+backend/data/
+*.db
+*.sqlite3
+
+# Node
+node_modules/
+frontend/dist/
+frontend/.vite/
+
+# IDE / 系统
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log
