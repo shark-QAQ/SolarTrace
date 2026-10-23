@@ -1,5 +1,7 @@
 # SolarTrace（光溯）· 光伏政策智能问答平台
 
+[![CI](https://github.com/shark-QAQ/SolarTrace/actions/workflows/ci.yml/badge.svg)](https://github.com/shark-QAQ/SolarTrace/actions/workflows/ci.yml)
+
 **一个"答错了能被发现"的 RAG 系统。**
 
 政策问答里最贵的错误不是答不出，是**引用了一个不存在的条款**——用户会照着它去办事。
