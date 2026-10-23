@@ -22,7 +22,7 @@ class EvalSetCreate(BaseModel):
 class RunEvalBody(BaseModel):
     eval_set_id: int
     top_k: int = Field(5, ge=1, le=20)
-    generate: bool = Field(False, description="是否对每条执行 LLM 生成以评测引用忠实度")
+    generate: bool = Field(False, description="是否对每条执行 LLM 生成以评测引用准确率")
 
 
 @router.get("/eval/sets")

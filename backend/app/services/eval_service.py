@@ -1,11 +1,13 @@
 # app/services/eval_service.py
-"""RAG 评测闭环：命中率 / 上下文召回率 / 引用忠实度 回归。
+"""RAG 评测闭环：命中率 / 上下文召回率 / 引用准确率 回归。
 
-- hit_rate：Top-K 结果是否命中黄金文号/黄金条款（召回@K）。
-- hit_rate_top1：首条命中比例。
-- context_recall：黄金关键词在召回上下文中的覆盖率均值。
-- faithfulness：生成答案的 [n] 引用均指向黄金文号的比例（generate=True 时计算；
-  该指标需要 LLM 参与，可能较慢）。
+- hit_rate：Top-K 结果是否命中黄金文号/黄金条款（召回@K）。IR 指标，RAGAS 不覆盖，故手写。
+- hit_rate_top1：首条命中比例。同上。
+- context_recall：黄金关键词在召回上下文中的覆盖率均值。同上。
+- citation_precision：生成答案的 [n] 引用所指向的文号中，属于黄金文号的占比
+  （generate=True 时计算；该指标需要 LLM 参与，可能较慢）。
+  注意：这是「引用查准率」，只校验引用指向是否正确，**不**校验答案论断是否被上下文支撑。
+  真正的忠实度（groundedness）需 LLM-as-judge 逐句验证，见 docs/RAG方案与评测.md。
 """
 from __future__ import annotations
 
@@ -69,14 +71,14 @@ class EvalService:
         }
         return detail, texts, (ctx.items[0].meta.doc_code if ctx.items else None)
 
-    def _faithfulness(
+    def _citation_precision(
         self, question: str, golden_codes: list[str], messages: list[dict], citations: list[dict]
     ) -> float | None:
-        """引用忠实度 = 生成答案引用的[来源]中指向黄金文号的比例（无引用记 0）。"""
+        """引用准确率 = 生成答案的 [n] 引用所指向文号中，属于黄金文号的占比（无引用记 0）。"""
         try:
             answer = self.rt.llm.complete(messages)
         except Exception as exc:  # noqa: BLE001
-            logger.warning("faithfulness 生成失败: %s", exc)
+            logger.warning("citation_precision 生成失败: %s", exc)
             self._last_answer = None
             return None
         self._last_answer = answer
@@ -116,7 +118,7 @@ class EvalService:
         details: list[dict] = []
         n_hit = n_hit1 = 0
         recall_vals: list[float] = []
-        faithfulness_vals: list[float] = []
+        citation_precision_vals: list[float] = []
         for case in cases:
             detail, _texts, _top1 = self._case_metrics(
                 db, case.question, list(case.golden_doc_codes or []), list(case.golden_keywords or []), top_k
@@ -130,12 +132,12 @@ class EvalService:
                 ctx = self.search.search(db, case.question, top_k=top_k)
                 citations = ctx.citations()
                 messages = qa.build_messages(ctx, case.question)
-                f = self._faithfulness(
+                f = self._citation_precision(
                     case.question, list(case.golden_doc_codes or []), messages, citations
                 )
                 if f is not None:
-                    faithfulness_vals.append(f)
-                detail["faithfulness"] = f
+                    citation_precision_vals.append(f)
+                detail["citation_precision"] = f
                 detail["answer"] = self._last_answer
                 # 附带每条目内容以支撑对账
                 detail["retrieved"] = list(citations)
@@ -151,8 +153,8 @@ class EvalService:
             hit_rate=round(n_hit / n, 4),
             hit_rate_top1=round(n_hit1 / n, 4),
             context_recall=round(sum(recall_vals) / len(recall_vals), 4) if recall_vals else 0.0,
-            faithfulness=round(sum(faithfulness_vals) / len(faithfulness_vals), 4)
-            if faithfulness_vals
+            citation_precision=round(sum(citation_precision_vals) / len(citation_precision_vals), 4)
+            if citation_precision_vals
             else None,
             details=details,
             created_by=operator_id,

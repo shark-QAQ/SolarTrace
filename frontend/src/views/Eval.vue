@@ -1,7 +1,7 @@
 <template>
   <div>
     <h2 class="page-title">RAG 评测闭环</h2>
-    <div class="page-sub">对标注问答集回归命中率(召回@K)、上下文召回率、引用忠实度，驱动分块/重排迭代</div>
+    <div class="page-sub">对标注问答集回归命中率(召回@K)、上下文召回率、引用准确率，驱动分块/重排迭代</div>
 
     <div class="toolbar">
       <el-select v-model="setId" placeholder="选择评测集" style="width: 240px">
@@ -10,7 +10,7 @@
       <el-select v-model="topK" style="width: 110px; margin-left: 8px">
         <el-option v-for="n in [3, 5, 8, 10]" :key="n" :value="n" :label="`Top ${n}`" />
       </el-select>
-      <el-checkbox v-model="generate" style="margin-left: 8px">生成以评测引用忠实度（较慢）</el-checkbox>
+      <el-checkbox v-model="generate" style="margin-left: 8px">生成以评测引用准确率（较慢）</el-checkbox>
       <el-button type="primary" style="margin-left: 8px" :loading="running" @click="runEval">开始评测</el-button>
     </div>
 
@@ -22,7 +22,7 @@
               <span class="dq">{{ d.hit ? '✅' : '❌' }} {{ d.question }}</span>
               <span class="dm">命中文号：{{ (d.top_doc_codes || []).join('、') || '—' }}</span>
               <span v-if="d.keywords_found && d.keywords_found.length" class="dm">关键词命中：{{ d.keywords_found.join('、') }}</span>
-              <span v-if="d.faithfulness !== undefined && d.faithfulness !== null" class="dm">忠实度 {{ d.faithfulness }}</span>
+              <span v-if="d.citation_precision !== undefined && d.citation_precision !== null" class="dm">引用准确率 {{ d.citation_precision }}</span>
             </div>
           </div>
           <el-empty v-else description="暂无明细" :image-size="40" />
@@ -43,10 +43,10 @@
       <el-table-column label="上下文召回">
         <template #default="{ row }">{{ (row.context_recall * 100).toFixed(1) }}%</template>
       </el-table-column>
-      <el-table-column label="引用忠实度">
+      <el-table-column label="引用准确率">
         <template #default="{ row }">
-          <span v-if="row.faithfulness === null || row.faithfulness === undefined">未评测</span>
-          <span v-else>{{ (row.faithfulness * 100).toFixed(1) }}%</span>
+          <span v-if="row.citation_precision === null || row.citation_precision === undefined">未评测</span>
+          <span v-else>{{ (row.citation_precision * 100).toFixed(1) }}%</span>
         </template>
       </el-table-column>
     </el-table>

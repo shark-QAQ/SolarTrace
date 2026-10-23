@@ -160,7 +160,9 @@ class EvalRun(Base):
     hit_rate: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
     hit_rate_top1: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
     context_recall: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
-    faithfulness: Mapped[float | None] = mapped_column(Float, nullable=True, default=None)
+    # 引用准确率：生成答案的 [n] 所指向文号中，属于黄金文号的占比。
+    # 注意：这是「引用查准」，不校验论断是否被上下文支撑（非 RAGAS 的 faithfulness）。
+    citation_precision: Mapped[float | None] = mapped_column(Float, nullable=True, default=None)
     details: Mapped[list] = mapped_column(JSON, nullable=False, default=list)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=_now, nullable=False, index=True)
     created_by: Mapped[int | None] = mapped_column(Integer, nullable=True)

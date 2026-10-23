@@ -128,7 +128,7 @@ async function load(p = 1) {
   loading.value = true
   try {
     const { data } = await http.get('/documents', {
-      params: { page: p, page_size: pageSize, ...(filter.status || {}), ...(filter.type ? { doc_type: filter.type } : {}), ...(filter.keyword ? { keyword: filter.keyword } : {}) },
+      params: { page: p, page_size: pageSize, ...(filter.status ? { status: filter.status } : {}), ...(filter.type ? { doc_type: filter.type } : {}), ...(filter.keyword ? { keyword: filter.keyword } : {}) },
     })
     rows.value = data.items
     total.value = data.total

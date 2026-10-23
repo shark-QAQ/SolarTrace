@@ -84,7 +84,7 @@ def run_to_dict(r: EvalRun) -> dict[str, Any]:
         "hit_rate": r.hit_rate,
         "hit_rate_top1": r.hit_rate_top1,
         "context_recall": r.context_recall,
-        "faithfulness": r.faithfulness,
+        "citation_precision": r.citation_precision,
         "details": r.details,
         "created_at": r.created_at.isoformat(),
     }
