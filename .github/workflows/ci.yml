@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  backend:
+    name: Backend (FastAPI / RAG)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Install (with test extra)
+        run: uv sync --extra test
+
+      - name: Lint
+        run: uv run ruff check app tests
+
+      - name: Test (offline: temp DB + fake LLM + hash embedding)
+        run: uv run python -m pytest -q
