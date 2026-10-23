@@ -25,5 +25,5 @@ jobs:
       - name: Lint
         run: uv run ruff check app tests
 
-      - name: Test (offline: temp DB + fake LLM + hash embedding)
+      - name: 'Test (offline: temp DB + fake LLM + hash embedding)'
         run: uv run python -m pytest -q
